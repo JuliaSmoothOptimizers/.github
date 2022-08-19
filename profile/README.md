@@ -4,8 +4,8 @@
 
 # Welcome to JuliaSmoothOptimizers (JSO)
 
-We are a group of researchers in numerical linear algebra and optimization interested in cutting-edge and original solvers.
-JSO contains a collection of packages to model, solve, benchmark and analyze results efficiently.
+JSO is an organization dedicated to numerical linear algebra and optimization, containing packages to model, solve, benchmark and analyze results efficiently.
+We aim, among other things, to provide cutting-edge and original solvers and tools for researchers.
 
 Feel free to visit our website [juliasmoothoptimizers.github.io](https://juliasmoothoptimizers.github.io) to get recent updates of the organization.
 
