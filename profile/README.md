@@ -36,11 +36,11 @@ You might also be interest in [SolverBenchmark.jl](https://github.com/JuliaSmoot
 
 ### Linear algebra
 
-- Efficient modelisation of linear systems 🤠: [LinearOperators.jl](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl), [SparseMatricesCOO.jl](https://github.com/JuliaSmoothOptimizers/SparseMatricesCOO.jl), [LLSModels.jl](https://github.com/JuliaSmoothOptimizers/LLSModels.jl)
+- Efficient modeling of linear systems 🤠: [LinearOperators.jl](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl), [SparseMatricesCOO.jl](https://github.com/JuliaSmoothOptimizers/SparseMatricesCOO.jl), [LLSModels.jl](https://github.com/JuliaSmoothOptimizers/LLSModels.jl)
 - Solving linear systems with iterative methods 🥳: [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl) 
-- Compute matrix factorization 👾: [LDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LDLFactorizations.jl), [LimitedLDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LimitedLDLFactorizations.jl), [HSL.jl](https://github.com/JuliaSmoothOptimizers/HSL.jl), [MUMPS.jl](https://github.com/JuliaSmoothOptimizers/MUMPS.jl), [QRMumps.jl](https://github.com/JuliaSmoothOptimizers/QRMumps.jl)
-- Preconditionner: [BasicLU.jl](https://github.com/JuliaSmoothOptimizers/BasicLU.jl)
-- Test problems 🤼: [SuiteSparseMatrixCollection.jl](https://github.com/JuliaSmoothOptimizers/SuiteSparseMatrixCollection.jl)
+- Compute matrix factorization 👾: [LDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LDLFactorizations.jl), [HSL.jl](https://github.com/JuliaSmoothOptimizers/HSL.jl), [MUMPS.jl](https://github.com/JuliaSmoothOptimizers/MUMPS.jl), [QRMumps.jl](https://github.com/JuliaSmoothOptimizers/QRMumps.jl), [AMD.jl](https://github.com/JuliaSmoothOptimizers/AMD.jl)
+- Preconditionner: [BasicLU.jl](https://github.com/JuliaSmoothOptimizers/BasicLU.jl), [LimitedLDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LimitedLDLFactorizations.jl)
+- Test systems 🤼: [SuiteSparseMatrixCollection.jl](https://github.com/JuliaSmoothOptimizers/SuiteSparseMatrixCollection.jl)
 
 ### Quadratic optimization problems
 
@@ -55,14 +55,8 @@ You might also be interest in [SolverBenchmark.jl](https://github.com/JuliaSmoot
 
 ### Generic optimization problems 🤯
 
-- Model general optimization problems 💪: [ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl), [NLPModelsJuMP](https://github.com/JuliaSmoothOptimizers/NLPModelsJuMP.jl), [AmplNLReader.jl](https://github.com/JuliaSmoothOptimizers/AmplNLReader.jl)
+- Model general optimization problems 💪: [ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl), [KnetNLPModels.jl](https://github.com/JuliaSmoothOptimizers/KnetNLPModels.jl), [PDENLPModels.jl](https://github.com/JuliaSmoothOptimizers/PDENLPModels.jl)
+- Load models from other modeling systems 🦅: [NLPModelsJuMP](https://github.com/JuliaSmoothOptimizers/NLPModelsJuMP.jl), [AmplNLReader.jl](https://github.com/JuliaSmoothOptimizers/AmplNLReader.jl), [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl)
 - Solvers for unconstrained and bound-constrained models 👍: [JSOSolvers](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl)
 - Solve generic optimization problems 🤘: [DCISolver.jl](https://github.com/JuliaSmoothOptimizers/DCISolver.jl), [NLPModelsIpopt.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsIpopt.jl), [NLPModelsKnitro.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsKnitro.jl), [Percival.jl](https://github.com/JuliaSmoothOptimizers/Percival.jl)
-- Collection of test problems 🤖: [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl), [OptimizationProblems.jl](https://github.com/JuliaSmoothOptimizers/OptimizationProblems.jl), , 
-
-### So good, they can't be classified 🙀
-
-- Interface to Knet.jl 🦄: [KnetNLPModels.jl](https://github.com/JuliaSmoothOptimizers/KnetNLPModels.jl)
-- Model PDE-constrained optimization problems 🧘: [PDENLPModels.jl](https://github.com/JuliaSmoothOptimizers/PDENLPModels.jl)
-- Repository of bundle adjustment problems 📷: [BundleAdjustmentModels.jl)](https://github.com/JuliaSmoothOptimizers/BundleAdjustmentModels.jl)
-- Minimum degree ordering 🦅: [AMD.jl](https://github.com/JuliaSmoothOptimizers/AMD.jl)
+- Collection of test problems 🤖: [BundleAdjustmentModels.jl)](https://github.com/JuliaSmoothOptimizers/BundleAdjustmentModels.jl), [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl), [OptimizationProblems.jl](https://github.com/JuliaSmoothOptimizers/OptimizationProblems.jl)
