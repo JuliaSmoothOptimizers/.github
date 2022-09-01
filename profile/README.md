@@ -38,8 +38,8 @@ You might also be interest in [SolverBenchmark.jl](https://github.com/JuliaSmoot
 
 - Efficient modeling of linear systems 🤠: [LinearOperators.jl](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl), [SparseMatricesCOO.jl](https://github.com/JuliaSmoothOptimizers/SparseMatricesCOO.jl), [LLSModels.jl](https://github.com/JuliaSmoothOptimizers/LLSModels.jl)
 - Solving linear systems with iterative methods 🥳: [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl) 
-- Compute matrix factorization 👾: [LDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LDLFactorizations.jl), [HSL.jl](https://github.com/JuliaSmoothOptimizers/HSL.jl), [MUMPS.jl](https://github.com/JuliaSmoothOptimizers/MUMPS.jl), [QRMumps.jl](https://github.com/JuliaSmoothOptimizers/QRMumps.jl), [AMD.jl](https://github.com/JuliaSmoothOptimizers/AMD.jl)
-- Preconditionner: [BasicLU.jl](https://github.com/JuliaSmoothOptimizers/BasicLU.jl), [LimitedLDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LimitedLDLFactorizations.jl)
+- Compute matrix factorization 👾: [LDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LDLFactorizations.jl), [HSL.jl](https://github.com/JuliaSmoothOptimizers/HSL.jl), [MUMPS.jl](https://github.com/JuliaSmoothOptimizers/MUMPS.jl), [QRMumps.jl](https://github.com/JuliaSmoothOptimizers/QRMumps.jl)
+- Preconditionner 🚀: [BasicLU.jl](https://github.com/JuliaSmoothOptimizers/BasicLU.jl), [LimitedLDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LimitedLDLFactorizations.jl), [AMD.jl](https://github.com/JuliaSmoothOptimizers/AMD.jl)
 - Test systems 🤼: [SuiteSparseMatrixCollection.jl](https://github.com/JuliaSmoothOptimizers/SuiteSparseMatrixCollection.jl)
 
 ### Quadratic optimization problems
