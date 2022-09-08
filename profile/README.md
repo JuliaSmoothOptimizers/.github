@@ -60,3 +60,10 @@ You might also be interested in [SolverBenchmark.jl](https://github.com/JuliaSmo
 - Solve unconstrained and bound-constrained models 👍: [JSOSolvers](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl)
 - Solve general optimization problems 🤘: [DCISolver.jl](https://github.com/JuliaSmoothOptimizers/DCISolver.jl), [NLPModelsIpopt.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsIpopt.jl), [NLPModelsKnitro.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsKnitro.jl), [Percival.jl](https://github.com/JuliaSmoothOptimizers/Percival.jl)
 - Access a collection of test problems 🤖: [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl), [OptimizationProblems.jl](https://github.com/JuliaSmoothOptimizers/OptimizationProblems.jl)
+
+
+#### Acknowledgements
+
+We gratefully acknowledge the support of MacStadium for providing us with hardware use for continuous integration at JSO!
+
+<img src="https://user-images.githubusercontent.com/38760/189140951-cebeb891-e18f-49e2-8ff8-63b2b1afd4f9.png" width="200">
