@@ -64,6 +64,6 @@ You might also be interested in [SolverBenchmark.jl](https://github.com/JuliaSmo
 
 #### Acknowledgements
 
-We gratefully acknowledge the support of MacStadium for providing us with hardware use for continuous integration at JSO!
+We gratefully acknowledge the support of MacStadium for providing us with hardware used for continuous integration at JSO!
 
 <img src="https://user-images.githubusercontent.com/38760/189140951-cebeb891-e18f-49e2-8ff8-63b2b1afd4f9.png" width="200">
