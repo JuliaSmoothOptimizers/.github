@@ -50,14 +50,14 @@ You might also be interested in [SolverBenchmark.jl](https://github.com/JuliaSmo
 ### Nonlinear Least squares
 
 - Model nonlinear least-squares problems 🧙: [ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl), [NLPModelsJuMP](https://github.com/JuliaSmoothOptimizers/NLPModelsJuMP.jl) 
-- Solve nonlinear least squares 🧐: [CaNNOLeS.jl](https://github.com/JuliaSmoothOptimizers/CaNNOLeS.jl), [JSOSolvers](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl)
+- Solve nonlinear least squares 🧐: [CaNNOLeS.jl](https://github.com/JuliaSmoothOptimizers/CaNNOLeS.jl), [JSOSolvers.jl](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl)
 - Access test problems 🤺: [BundleAdjustmentModels.jl](https://github.com/JuliaSmoothOptimizers/BundleAdjustmentModels.jl), [NLSProblems.jl](https://github.com/JuliaSmoothOptimizers/NLSProblems.jl), [OptimizationProblems.jl](https://github.com/JuliaSmoothOptimizers/OptimizationProblems.jl)
 
 ### General nonlinear optimization
 
-- Model general optimization problems 💪: [ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl), [KnetNLPModels.jl](https://github.com/JuliaSmoothOptimizers/KnetNLPModels.jl), [PDENLPModels.jl](https://github.com/JuliaSmoothOptimizers/PDENLPModels.jl)
-- Load models from other modeling systems 🦅: [NLPModelsJuMP](https://github.com/JuliaSmoothOptimizers/NLPModelsJuMP.jl), [AmplNLReader.jl](https://github.com/JuliaSmoothOptimizers/AmplNLReader.jl), [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl)
-- Solve unconstrained and bound-constrained models 👍: [JSOSolvers](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl) [AdaptiveRegularization.jl](https://github.com/JuliaSmoothOptimizers/AdaptiveRegularization.jl)
+- Model general optimization problems 💪: [NLPModels.jl](https://github.com/JuliaSmoothOptimizers/NLPModels.jl), [ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl), [KnetNLPModels.jl](https://github.com/JuliaSmoothOptimizers/KnetNLPModels.jl), [PDENLPModels.jl](https://github.com/JuliaSmoothOptimizers/PDENLPModels.jl)
+- Load models from other modeling systems 🦅: [NLPModelsJuMP.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsJuMP.jl), [AmplNLReader.jl](https://github.com/JuliaSmoothOptimizers/AmplNLReader.jl), [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl)
+- Solve unconstrained and bound-constrained models 👍: [JSOSolvers.jl](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl) [AdaptiveRegularization.jl](https://github.com/JuliaSmoothOptimizers/AdaptiveRegularization.jl)
 - Solve general optimization problems 🤘: [DCISolver.jl](https://github.com/JuliaSmoothOptimizers/DCISolver.jl), [FletcherPenaltySolver.jl](https://github.com/JuliaSmoothOptimizers/FletcherPenaltySolver.jl), [NLPModelsIpopt.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsIpopt.jl), [NLPModelsKnitro.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsKnitro.jl), [Percival.jl](https://github.com/JuliaSmoothOptimizers/Percival.jl)
 - Access a collection of test problems 🤖: [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl), [OptimizationProblems.jl](https://github.com/JuliaSmoothOptimizers/OptimizationProblems.jl)
 
