@@ -37,7 +37,7 @@ You might also be interested in [SolverBenchmark.jl](https://github.com/JuliaSmo
 ### Linear algebra (incl. linear least squares)
 
 - Efficiently model linear problems 🤠: [LinearOperators.jl](https://github.com/JuliaSmoothOptimizers/LinearOperators.jl), [SparseMatricesCOO.jl](https://github.com/JuliaSmoothOptimizers/SparseMatricesCOO.jl), [LLSModels.jl](https://github.com/JuliaSmoothOptimizers/LLSModels.jl)
-- Solve linear problems with iterative methods 🥳: [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl) 
+- Solve linear problems with iterative methods 🥳: [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl), [KrylovPreconditioners.jl](https://github.com/JuliaSmoothOptimizers/KrylovPreconditioners.jl) 
 - Computing a sparse factorization 👾: [LDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LDLFactorizations.jl), [HSL.jl](https://github.com/JuliaSmoothOptimizers/HSL.jl), [MUMPS.jl](https://github.com/JuliaSmoothOptimizers/MUMPS.jl), [QRMumps.jl](https://github.com/JuliaSmoothOptimizers/QRMumps.jl)
 - Construct a preconditionner 🚀: [BasicLU.jl](https://github.com/JuliaSmoothOptimizers/BasicLU.jl), [LimitedLDLFactorizations.jl](https://github.com/JuliaSmoothOptimizers/LimitedLDLFactorizations.jl), [AMD.jl](https://github.com/JuliaSmoothOptimizers/AMD.jl)
 - Access test systems 🤼: [SuiteSparseMatrixCollection.jl](https://github.com/JuliaSmoothOptimizers/SuiteSparseMatrixCollection.jl)
