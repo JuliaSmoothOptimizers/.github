@@ -3,7 +3,7 @@ name: Invalidations
 # using https://github.com/julia-actions/julia-invalidations
 
 on:
-  pull_request:
+  workflow_call:
 
 concurrency:
   # Skip intermediate builds: always.
