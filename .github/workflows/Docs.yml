@@ -1,0 +1,52 @@
+name: Docs
+
+on:
+  workflow_call:
+    inputs:
+      package_name:
+        required: true
+        type: string
+      docs_project_path:
+        required: false
+        type: string
+        default: "docs"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+jobs:
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1"
+
+      - name: Use Julia cache
+        uses: julia-actions/cache@v2
+
+      - name: Instantiate environment with development version of the package
+        run: |
+          julia --project=${{ inputs.docs_project_path }} -e '
+            using Pkg
+            Pkg.develop(PackageSpec(path=pwd()))
+            Pkg.instantiate()'
+
+      - name: Run doctest
+        run: |
+          julia --project=${{ inputs.docs_project_path }} -e "
+            using Documenter: DocMeta, doctest
+            using $(\"${{ inputs.package_name }}\")
+            DocMeta.setdocmeta!($(\"${{ inputs.package_name }}\"), :DocTestSetup, :(using $(\"${{ inputs.package_name }}\")); recursive=true)
+            doctest($(\"${{ inputs.package_name }}\"))"
+      - name: Generate and deploy documentation
+        run: julia --project=${{ inputs.docs_project_path }} ${{ inputs.docs_project_path }}/make.jl
+        env:
+          JULIA_PKG_SERVER: ""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+          GKSwstype: "100"
