@@ -5,7 +5,6 @@ name: Breakage
 # no access to secrets
 on:
   workflow_call:
-  # pull_request: # Not needed for PR on .github repo
 
 jobs:
   # Build dynamically the matrix on which the "break" job will run.
