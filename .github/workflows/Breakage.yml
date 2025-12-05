@@ -11,12 +11,6 @@ jobs:
     env:
       pkg: ${{ github.event.repository.name }}
     steps:
-      - name: Debug .breakage layout
-        run: |
-          pwd
-          ls -R
-          echo "------ jso-dotgithub/.breakage content ------"
-          ls -R jso-dotgithub/.breakage
       # Checkout the caller repo (NLPModels.jl, Krylov.jl, ...)
       - uses: actions/checkout@v4
 
