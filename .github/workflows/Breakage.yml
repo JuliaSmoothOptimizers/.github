@@ -26,6 +26,7 @@ jobs:
         with:
           repository: JuliaSmoothOptimizers/.github
           path: jso-dotgithub
+          ref: move-scripts-to-github-JSO
 
       - uses: julia-actions/setup-julia@v2
         with:
