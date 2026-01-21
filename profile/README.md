@@ -49,7 +49,7 @@ You might also be interested in [SolverBenchmark.jl](https://github.com/JuliaSmo
 
 ### Nonlinear Least squares
 
-- Model nonlinear least-squares problems 🧙: [ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl), [NLPModelsJuMP](https://github.com/JuliaSmoothOptimizers/NLPModelsJuMP.jl) 
+- Model nonlinear least-squares problems 🧙: [ADNLPModels.jl](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl), [NLPModelsJuMP.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsJuMP.jl) 
 - Solve nonlinear least squares 🧐: [CaNNOLeS.jl](https://github.com/JuliaSmoothOptimizers/CaNNOLeS.jl), [JSOSolvers.jl](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl)
 - Access test problems 🤺: [BundleAdjustmentModels.jl](https://github.com/JuliaSmoothOptimizers/BundleAdjustmentModels.jl), [NLSProblems.jl](https://github.com/JuliaSmoothOptimizers/NLSProblems.jl), [OptimizationProblems.jl](https://github.com/JuliaSmoothOptimizers/OptimizationProblems.jl)
 
