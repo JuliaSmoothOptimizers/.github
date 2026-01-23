@@ -59,7 +59,8 @@ You might also be interested in [SolverBenchmark.jl](https://github.com/JuliaSmo
 - Load models from other modeling systems 🦅: [NLPModelsJuMP.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsJuMP.jl), [AmplNLReader.jl](https://github.com/JuliaSmoothOptimizers/AmplNLReader.jl), [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl)
 - Solve unconstrained and bound-constrained models 👍: [JSOSolvers.jl](https://github.com/JuliaSmoothOptimizers/JSOSolvers.jl) [AdaptiveRegularization.jl](https://github.com/JuliaSmoothOptimizers/AdaptiveRegularization.jl)
 - Solve general optimization problems 🤘: [DCISolver.jl](https://github.com/JuliaSmoothOptimizers/DCISolver.jl), [FletcherPenaltySolver.jl](https://github.com/JuliaSmoothOptimizers/FletcherPenaltySolver.jl), [NLPModelsIpopt.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsIpopt.jl), [NLPModelsKnitro.jl](https://github.com/JuliaSmoothOptimizers/NLPModelsKnitro.jl), [Percival.jl](https://github.com/JuliaSmoothOptimizers/Percival.jl)
-- Access a collection of test problems 🤖: [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl), [OptimizationProblems.jl](https://github.com/JuliaSmoothOptimizers/OptimizationProblems.jl)
+- Solve nonsmooth optimization problems 😎: [RegularizedOptimization.jl](https://github.com/JuliaSmoothOptimizers/RegularizedOptimization.jl), [ShiftedProximalOperators.jl](https://github.com/JuliaSmoothOptimizers/ShiftedProximalOperators.jl)
+- Access a collection of test problems 🤖: [CUTEst.jl](https://github.com/JuliaSmoothOptimizers/CUTEst.jl), [OptimizationProblems.jl](https://github.com/JuliaSmoothOptimizers/OptimizationProblems.jl), [RegularizedProblems.jl](https://github.com/JuliaSmoothOptimizers/RegularizedProblems.jl)
 
 
 #### Acknowledgements
