@@ -15,6 +15,8 @@ Before opening a pull request, start an issue or a discussion on the topic, plea
 If you want to ask a question that is not suited for a bug report, feel free to start a discussion [here](https://github.com/JuliaSmoothOptimizers/Organization/discussions).
 This forum is for general discussion, so questions about any of our packages are welcome.
 
+Questions related to a specific package can also be asked in the Discussions section of the appropriate repository.
+
 ## New tutorials
 
 Go to <https://github.com/JuliaSmoothOptimizers/JSOTutorials.jl>.
