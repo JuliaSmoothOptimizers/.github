@@ -13,7 +13,7 @@ A clear and concise description of the problems.
 
 **Describe the algorithm you’d like**
 
-A clear and concise description of what you want we to have.
+A clear and concise description of what you want us to add.
 
 **Other implementations to know about**
 
