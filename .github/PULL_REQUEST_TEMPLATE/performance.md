@@ -1,6 +1,6 @@
-**What bug was fixed? 🐞**
+**What performance issue or regression is being addressed? ⚡**
 
-Fixes ...
+Describe the performance issue or regression and how this PR addresses it.
 
 **Show some benchmarks of the performance before and after the changes**
 
