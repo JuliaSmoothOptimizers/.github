@@ -3,9 +3,13 @@
 - Clearly,
 - and concisely.
 
+A documentation fix pull request should focus solely on the documentation improvement, and should not include any other changes such as new features or performance improvements.
+
 **Checklist**
 
 - [ ] The improved documentation only uses public API
+- [ ] The pull request does not include `Manifest.toml` or other temporary files, such as `.DS_Store`, etc.
+- [ ] The code was formatted with the Julia formatter using the settings included in this repository
 - [ ] The new code follows the
   [contributor guidelines](https://github.com/JuliaSmoothOptimizers/.github/blob/master/CONTRIBUTING.md).
 

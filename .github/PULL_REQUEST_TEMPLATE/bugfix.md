@@ -1,5 +1,7 @@
 **Indicate what bug was fixed 🐞**
 
+A bugfix pull request should focus solely on the bugfix, and should not include any other changes such as new features or performance improvements. The pull request should clearly indicate what bug was fixed, and should reference the issue that describes the bug.
+
 Fixes ...
 
 **Explain how the bug was fixed**
@@ -9,6 +11,9 @@ Please link relevant documents that support your fix, such as documentation, cod
 **Checklist**
 
 - [ ] The MRE from the issue is added to the test or equivalent
+- [ ] The pull request does not include `Manifest.toml` or other temporary files, such as `.DS_Store`, etc.
+- [ ] The code was formatted with the Julia formatter using the settings included in this repository
+- [ ] All reasonable attempts were made to avoid unnecessary allocations
 - [ ] The fix was done in a way that does not break public API
 - [ ] All documentation related to the fix was updated
 - [ ] All downstream repositories that were affected by the bug were updated
