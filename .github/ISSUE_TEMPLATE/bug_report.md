@@ -17,7 +17,7 @@ A clear and concise description of what you expected to happen.
 
 **Minimal Reproducible Example 👇**
 
-Without MRE, we would only be able to help you to a limited extent, and attention to the issue would be limited. to know more about MRE refer to [wikipedia](https://en.wikipedia.org/wiki/Minimal_reproducible_example) and [stackoverflow](https://stackoverflow.com/help/minimal-reproducible-example).
+Without a minimal reproducible example (MRE), we can only help you to a limited extent, and attention to the issue may be reduced. To learn more about MREs, see [Wikipedia](https://en.wikipedia.org/wiki/Minimal_reproducible_example) and [Stack Overflow](https://stackoverflow.com/help/minimal-reproducible-example).
 
 ```julia
 
@@ -31,19 +31,19 @@ Without MRE, we would only be able to help you to a limited extent, and attentio
 
 **Environment (please complete the following information):**
 
-  - Output of `using Pkg; Pkg.status()`
+- Output of `using Pkg; Pkg.status()`
 
 ```julia
 
 ```
 
-  - Output of `using Pkg; Pkg.status(; mode = PKGMODE_MANIFEST)`
+- Output of `using Pkg; Pkg.status(; mode = PKGMODE_MANIFEST)`
 
 ```julia
 
 ```
 
-  - Output of `versioninfo()`
+- Output of `versioninfo()`
 
 ```julia
 
