@@ -1,6 +1,12 @@
-**What performance issue or regression is being addressed? ⚡**
+**Explain what performance issue or regression is being addressed ⚡**
 
-Describe the performance issue or regression and how this PR addresses it.
+A pull request for a performance improvement or regression must reference a performance issue or regression.
+
+Fixes ...
+
+**Describe the performance issue or regression and how this PR addresses it**
+
+Describe clearly and concisely what the performance issue or regression is, and how the changes in this pull request address it. Please link relevant documents that support your description, such as documentation, code comments, or external resources.
 
 **Show some benchmarks of the performance before and after the changes**
 

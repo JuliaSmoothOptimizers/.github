@@ -1,8 +1,13 @@
+**Please describe the changes you made in this pull request.**
+
+- Clearly,
+- and concisely.
+
 **Checklist**
 
 - [ ] The improved documentation only uses public API
 - [ ] The new code follows the
-  [contributor guidelines](https://github.com/SciML/.github/blob/master/CONTRIBUTING.md).
+  [contributor guidelines](https://github.com/JuliaSmoothOptimizers/.github/blob/master/CONTRIBUTING.md).
 
 Please also check one of the following:
 

@@ -7,18 +7,18 @@ assignees: ''
 
 ---
 
-**What kind of problems is it mostly used for? Please describe.**
+**To what kind of problems does the new algorithm apply? Please describe.**
 
 A clear and concise description of the problems.
 
-**Describe the algorithm you’d like**
+**Describe the new algorithm**
 
 A clear and concise description of what you want us to add.
 
 **Other implementations to know about**
 
-If there are any other implementations of it, we would like to know about them.
+Please link any other implementations of the new algorithm.
 
 **References**
 
-We appreciate knowing more about the new algorithm. Please include any records of it.
+Please link references where the new algorithm is described, such as research papers, or books.

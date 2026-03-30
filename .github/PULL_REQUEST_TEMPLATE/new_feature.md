@@ -1,13 +1,19 @@
-**What feature report was addressed?**
+**Please indicate what feature request you addressed**
 
-Fixes ...
+A new feature implementation must reference a new feature request issue.
+
+Closes ...
+
+**Please describe how the changes were implemented**
+
+Explain what logic the changes are based on, and how the new feature was implemented. Please link relevant documents that support your implementation, such as documentation, code comments, or external resources.
 
 **Checklist**
 
 - [ ] Appropriate tests were added
 - [ ] The new feature was added in a way that does not break public API
 - [ ] New documentation related to the new feature was added
-- [ ] The new code follows the [contributor guidelines](https://github.com/SciML/.github/blob/master/CONTRIBUTING.md).
+- [ ] The new code follows the [contributor guidelines](https://github.com/JuliaSmoothOptimizers/.github/blob/master/CONTRIBUTING.md).
 
 Please also check one of the following:
 

@@ -9,7 +9,7 @@ assignees: ''
 
 **Describe the example**
 
-A clear and concise description of what the example is.
+A clear and concise description of the example.
 
 **Minimal Reproducible Example 👇**
 
@@ -25,21 +25,21 @@ Without a minimal reproducible example (MRE), we can only help you to a limited 
 
 ```
 
-**Not Working Environment (please complete the following information):**
+**Broken Environment (please complete the following information):**
 
-  - Output of `using Pkg; Pkg.status()`
-
-```julia
-
-```
-
-  - Output of `using Pkg; Pkg.status(; mode = PKGMODE_MANIFEST)`
+- Output of `using Pkg; Pkg.status()`
 
 ```julia
 
 ```
 
-  - Output of `versioninfo()`
+- Output of `using Pkg; Pkg.status(; mode = PKGMODE_MANIFEST)`
+
+```julia
+
+```
+
+- Output of `versioninfo()`
 
 ```julia
 
@@ -47,19 +47,19 @@ Without a minimal reproducible example (MRE), we can only help you to a limited 
 
 **Working Environment (please complete the following information):**
 
-  - Output of `using Pkg; Pkg.status()`
+- Output of `using Pkg; Pkg.status()`
 
 ```julia
 
 ```
 
-  - Output of `using Pkg; Pkg.status(; mode = PKGMODE_MANIFEST)`
+- Output of `using Pkg; Pkg.status(; mode = PKGMODE_MANIFEST)`
 
 ```julia
 
 ```
 
-  - Output of `versioninfo()`
+- Output of `versioninfo()`
 
 ```julia
 

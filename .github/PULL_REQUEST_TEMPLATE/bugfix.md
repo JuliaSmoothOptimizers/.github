@@ -1,6 +1,10 @@
-**What bug was fixed? 🐞**
+**Indicate what bug was fixed 🐞**
 
 Fixes ...
+
+**Explain how the bug was fixed**
+
+Please link relevant documents that support your fix, such as documentation, code comments, or external resources.
 
 **Checklist**
 
@@ -8,7 +12,7 @@ Fixes ...
 - [ ] The fix was done in a way that does not break public API
 - [ ] All documentation related to the fix was updated
 - [ ] All downstream repositories that were affected by the bug were updated
-- [ ] The new code follows the [contributor guidelines](https://github.com/SciML/.github/blob/master/CONTRIBUTING.md).
+- [ ] The new code follows the [contributor guidelines](https://github.com/JuliaSmoothOptimizers/.github/blob/master/CONTRIBUTING.md).
 
 Please also check one of the following:
 
