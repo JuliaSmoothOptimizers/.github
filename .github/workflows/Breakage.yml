@@ -1,10 +1,7 @@
-# Ref: https://securitylab.github.com/research/github-actions-preventing-pwn-requests
 name: Breakage
 
-# read-only repo token
-# no access to secrets
 on:
-  pull_request:
+  workflow_call:
 
 jobs:
   # Build dynamically the matrix on which the "break" job will run.
