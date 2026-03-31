@@ -1,10 +1,7 @@
 name: Comment Breakage
 
 on:
-  workflow_run:
-    workflows: ["Breakage"]
-    types: 
-      - completed
+  workflow_call:
 
 jobs:
   comment_pr:
