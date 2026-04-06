@@ -20,7 +20,7 @@ Describe clearly and concisely what the performance issue or regression is, and 
 - [ ] All reasonable attempts were made to avoid unnecessary allocations
 - [ ] Package benchmarks cover the feature's performance
 - [ ] The performance improvement was added in a way that does not break public API
-- [ ] The new code follows the [contributor guidelines](https://github.com/SciML/.github/blob/master/CONTRIBUTING.md).
+- [ ] The new code follows the [contributor guidelines](https://github.com/JuliaSmoothOptimizers/.github/blob/master/CONTRIBUTING.md).
 
 Please also check one of the following:
 
