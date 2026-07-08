@@ -68,3 +68,4 @@ jobs:
         with:
           filePath: breakage/summary.md
           pr_number: ${{ steps.read_pr.outputs.pr_number }}
+          comment_tag: breakage-summary
