@@ -66,5 +66,6 @@ jobs:
       - name: PR comment with file
         uses: thollander/actions-comment-pull-request@v2
         with:
-          filePath: breakage/summary.md
-          pr_number: ${{ steps.read_pr.outputs.pr_number }}
+          file-path: breakage/summary.md
+          pr-number: ${{ steps.read_pr.outputs.pr_number }}
+          comment-tag: breakage-summary
