@@ -13,7 +13,7 @@ dependents = String[]
 # Fetches the Project.toml file from the given URL and returns it as a Dict{String, Any}
 # Throws an error if the file cannot be fetched or parsed.
 function fetch_toml(url)
-  try 
+  try
     io = Downloads.download(url, IOBuffer())  # IOBuffer holding the response
     bytes = take!(io)                         # Vector{UInt8}
     text = String(bytes)                      # raw TOML text
@@ -21,7 +21,7 @@ function fetch_toml(url)
     return project_toml
   catch e
     if isa(e, Downloads.RequestError)
-      return Dict{String, Any}()
+      return Dict{String,Any}()
     else
       rethrow(e)
     end
