@@ -48,13 +48,6 @@ function is_dep(repo, pkg; suffix = "/raw/main/Project.toml")
   return is_dep
 end
 
-# Returns true if `pkg` is a dependency listed in the Project.toml of the package `repo` under the `docs` folder.
-function is_doc_dep(repo, pkg)
-  repo_name = splitext(repo.name)[1]
-  repo_name == pkg && return false  # avoid self-dependency
-  return is_dep(repo, pkg; suffix = "/raw/main/docs/Project.toml")
-end
-
 # Returns true if `pkg` is a dependency listed in the Project.toml of the package `repo` under the `test` folder.
 function is_test_dep(repo, pkg)
   repo_name = splitext(repo.name)[1]
@@ -64,8 +57,6 @@ end
 
 for (repo_name, repo) in zip(jso_names, jso_repos)
   if is_dep(repo, name)
-    push!(dependents, repo_name)
-  elseif is_doc_dep(repo, name)
     push!(dependents, repo_name)
   elseif is_test_dep(repo, name)
     push!(dependents, repo_name)
