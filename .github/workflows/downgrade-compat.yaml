@@ -6,6 +6,7 @@ on:
 
 jobs:
   test:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         downgrade_mode: ['deps', 'alldeps']
