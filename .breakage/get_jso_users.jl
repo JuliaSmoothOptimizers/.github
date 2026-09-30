@@ -56,6 +56,8 @@ function is_test_dep(repo, pkg)
 end
 
 for (repo_name, repo) in zip(jso_names, jso_repos)
+  endswith(repo.name, ".jl") || continue  # Breakage.yml clones $PKG.jl.git; 
+  # skips: https://github.com/JuliaSmoothOptimizers/MultiPrecisionR2
   if is_dep(repo, name)
     push!(dependents, repo_name)
   elseif is_test_dep(repo, name)
