@@ -2,8 +2,40 @@ name: Breakage
 
 on:
   workflow_call:
+    inputs:
+      paths:
+        description: 'Comma-separated list of path patterns; the breakage tests only run if a changed file matches one of them.'
+        required: false
+        type: string
+        default: 'src/**,*.toml'
 
 jobs:
+  # Skip the breakage tests unless a file matching inputs.paths was modified.
+  check_paths:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.filter.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: filters
+        env:
+          PATHS: ${{ inputs.paths }}
+        run: |
+          {
+            echo "filters<<EOF_FILTERS"
+            echo "changed:"
+            IFS=',' read -ra pats <<< "$PATHS"
+            for p in "${pats[@]}"; do
+              p=$(echo "$p" | xargs)
+              [ -n "$p" ] && echo "  - '$p'"
+            done
+            echo "EOF_FILTERS"
+          } >> "$GITHUB_OUTPUT"
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: ${{ steps.filters.outputs.filters }}
+
   # Build dynamically the matrix on which the "break" job will run.
   # The matrix contains the packages that depend on ${{ env.pkg }}.
   # Job "setup_matrix" outputs variable "matrix", which is in turn
@@ -18,6 +50,8 @@ jobs:
   #   ]
   # }
   setup_matrix:
+    needs: check_paths
+    if: needs.check_paths.outputs.changed == 'true'
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.getmatrix.outputs.matrix }}
