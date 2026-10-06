@@ -29,9 +29,10 @@ function fetch_toml(url)
 end
 
 # Returns true if `pkg` is a dependency listed in the Project.toml of the package `repo` (including `extras`)
-function is_dep(repo, pkg; suffix = "/raw/main/Project.toml")
+function is_dep(repo, pkg; suffix = "/Project.toml")
   repo_html = string(repo.html_url)
-  repo_toml, is_dep = fetch_toml(repo_html * suffix), false
+  branch = repo.default_branch
+  repo_toml, is_dep = fetch_toml(repo_html * "/raw/$branch" * suffix), false
 
   if haskey(repo_toml, "deps")
     is_dep = pkg in keys(repo_toml["deps"])
@@ -52,7 +53,7 @@ end
 function is_test_dep(repo, pkg)
   repo_name = splitext(repo.name)[1]
   repo_name == pkg && return false  # avoid self-dependency
-  return is_dep(repo, pkg; suffix = "/raw/main/test/Project.toml")
+  return is_dep(repo, pkg; suffix = "/test/Project.toml")
 end
 
 for (repo_name, repo) in zip(jso_names, jso_repos)
