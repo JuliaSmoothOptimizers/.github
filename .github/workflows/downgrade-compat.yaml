@@ -8,6 +8,7 @@ jobs:
   test:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         downgrade_mode: ['deps', 'alldeps']
         julia-version: ['lts', '1']
