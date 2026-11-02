@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JuliaSmoothOptimizers dashboard</title>
+<style>
+  :root { --bg:#f6f8fa; --card:#fff; --fg:#1f2328; --muted:#656d76; --line:#d0d7de; --accent:#9558b2; --bar:#389826; --link:#0969da; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#0d1117; --card:#161b22; --fg:#e6edf3; --muted:#8b949e; --line:#30363d; --accent:#bc8cff; --bar:#3fb950; --link:#58a6ff; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:24px 20px 8px; max-width:1300px; margin:auto; }
+  h1 { margin:0; font-size:24px; } h1 span { color:var(--accent); }
+  .sub { color:var(--muted); font-size:13px; }
+  main { max-width:1300px; margin:auto; padding:12px 20px 40px; display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); }
+  section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; }
+  h2 { margin:0 0 2px; font-size:17px; }
+  .note { color:var(--muted); font-size:12px; margin-bottom:10px; }
+  a { color:var(--link); text-decoration:none; } a:hover { text-decoration:underline; }
+  .row { display:grid; grid-template-columns:150px 1fr 70px; align-items:center; gap:8px; padding:3px 0; width:100%; background:none; border:0; color:inherit; font:inherit; text-align:left; }
+  div.row { border-radius:4px; } div.row:hover, div.row.sel { background:rgba(149,88,178,.12); }
+  .row .name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .bar { height:12px; background:var(--bar); border-radius:3px; min-width:2px; }
+  .val { text-align:right; font-variant-numeric:tabular-nums; }
+  .more { margin-top:8px; background:none; border:1px solid var(--line); color:var(--fg); border-radius:6px; padding:4px 12px; cursor:pointer; }
+  .more:hover { border-color:var(--accent); }
+  #dependents { grid-column:1/-1; display:grid; grid-template-columns:minmax(300px,1fr) 2fr; gap:20px; }
+  @media (max-width:800px){ #dependents { grid-template-columns:1fr; } }
+  #detail { position:sticky; top:12px; align-self:start; }
+  #detail h3 { margin:0 0 6px; font-size:15px; }
+  #detail ul {  margin:8px 0 0; padding-left:18px; max-height:420px; overflow:auto; }
+  #detail li { margin-bottom:4px; }
+  .desc { color:var(--muted); font-size:13px; }
+  .tag { font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:10px; padding:0 6px; margin-left:4px; }
+  label { font-size:13px; color:var(--muted); }
+  #filter { width:100%; margin:0 0 8px; padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); }
+  .list { max-height:460px; overflow:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1><span>JSO</span> dashboard</h1>
+  <div class="sub" id="meta">Loading…</div>
+</header>
+<main>
+  <section><h2>Unique downloads</h2><div class="note" id="dl-note"></div><div id="dl"></div></section>
+  <section><h2>GitHub stars</h2><div class="note">Julia repositories in the organization</div><div id="stars"></div></section>
+  <section id="dependents">
+    <div>
+      <h2>Dependents in the General registry</h2>
+      <div class="note">Registered packages whose latest non-yanked release depends on the package. Click one to list them.</div>
+      <label><input type="checkbox" id="incl-jso" checked> include JSO packages</label>
+      <input id="filter" placeholder="Filter packages…">
+      <div class="list" id="dep-list"></div>
+    </div>
+    <div id="detail"><div class="note">Select a package to see its dependents.</div></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString();
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let data, selected = null;
+const expanded = { dl: false, stars: false };
+
+function barChart(el, key, items, valueOf, href) {
+  const shown = expanded[key] ? items : items.slice(0, 10);
+  const max = Math.max(1, ...items.map(valueOf));
+  el.innerHTML = shown.map(p => `<div class="row"><a class="name" href="${href(p)}" title="${esc(p.name)}">${esc(p.name)}</a>
+    <div class="bar" style="width:${100 * valueOf(p) / max}%"></div><div class="val">${fmt(valueOf(p))}</div></div>`).join("");
+  if (items.length > 10) {
+    const b = document.createElement("button");
+    b.className = "more";
+    b.textContent = expanded[key] ? "Show top 10" : `Show all ${items.length}`;
+    b.onclick = () => { expanded[key] = !expanded[key]; barChart(el, key, items, valueOf, href); };
+    el.appendChild(b);
+  }
+}
+
+const depsOf = p => p.dependents.filter(d => $("incl-jso").checked || !d.jso);
+
+function renderDeps() {
+  const q = $("filter").value.toLowerCase();
+  const items = data.packages.filter(p => p.registered && p.name.toLowerCase().includes(q))
+    .sort((a, b) => depsOf(b).length - depsOf(a).length || a.name.localeCompare(b.name));
+  const max = Math.max(1, ...items.map(p => depsOf(p).length));
+  $("dep-list").innerHTML = items.map(p => `<div class="row ${p.name === selected ? "sel" : ""}">
+    <a class="name" href="#${encodeURIComponent(p.name)}" data-n="${esc(p.name)}">${esc(p.name)}</a><div class="bar" style="width:${100 * depsOf(p).length / max}%"></div>
+    <span class="val">${depsOf(p).length}</span></div>`).join("");
+  $("dep-list").querySelectorAll("a.name").forEach(a => a.onclick = e => {
+    e.preventDefault();
+    selected = a.dataset.n;
+    history.replaceState(null, "", "#" + encodeURIComponent(selected));
+    renderDeps();
+    if (matchMedia("(max-width:800px)").matches) $("detail").scrollIntoView();
+  });
+  renderDetail();
+}
+
+function renderDetail() {
+  const p = data.packages.find(p => p.name === selected);
+  if (!p) return;
+  const ds = depsOf(p);
+  $("detail").innerHTML = `<h3><a href="${p.url}">${esc(p.name)}</a> <span class="tag">v${p.version}</span></h3>
+    <div class="note">${esc(p.description)}</div><strong>${ds.length}</strong> dependent package${ds.length === 1 ? "" : "s"}
+    <ul>${ds.map(d => `<li>${d.url ? `<a href="${d.url}">${esc(d.name)}</a>` : esc(d.name)}${d.jso ? '<span class="tag">JSO</span>' : ""}${d.description ? `<span class="desc"> — ${esc(d.description)}</span>` : ""}</li>`).join("")}</ul>`;
+}
+
+fetch("data.json").then(r => r.json()).then(d => {
+  data = d;
+  const w = d.downloads_window;
+  $("meta").textContent = `Updated ${new Date(d.generated).toLocaleString()} · ${d.packages.length} Julia repositories`;
+  $("dl-note").textContent = `Unique client addresses per day, summed over ${w.days} days (${w.start} to ${w.end}), from Julia package server logs. Registered packages only.`;
+  barChart($("dl"), "dl", d.packages.filter(p => p.registered).sort((a, b) => b.downloads - a.downloads), p => p.downloads, p => p.url);
+  barChart($("stars"), "stars", [...d.packages].sort((a, b) => b.stars - a.stars), p => p.stars, p => p.url);
+  $("filter").oninput = renderDeps;
+  $("incl-jso").onchange = renderDeps;
+  const h = decodeURIComponent(location.hash.slice(1));
+  selected = d.packages.some(p => p.name === h) ? h : d.packages.filter(p => p.registered).sort((a, b) => b.dependents.length - a.dependents.length)[0]?.name;
+  renderDeps();
+}).catch(e => { $("meta").textContent = "Failed to load data.json: " + e; });
+</script>
+</body>
+</html>
