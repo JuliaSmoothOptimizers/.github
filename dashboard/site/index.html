@@ -29,6 +29,12 @@
   #dependents { grid-column:1/-1; display:grid; grid-template-columns:minmax(300px,1fr) 2fr; gap:20px; }
   @media (max-width:800px){ #dependents { grid-template-columns:1fr; } }
   #detail { position:sticky; top:12px; align-self:start; }
+  #contributors { grid-column:1/-1; display:grid; grid-template-columns:minmax(300px,1fr) 2fr; gap:20px; }
+  @media (max-width:800px){ #contributors { grid-template-columns:1fr; } }
+  #contrib-detail { position:sticky; top:12px; align-self:start; }
+  .mosaic { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; max-height:520px; overflow:auto; }
+  .mosaic img { width:56px; height:56px; border-radius:50%; display:block; border:1px solid var(--line); }
+  #contrib .row.sel, #contrib .row:hover { background:rgba(149,88,178,.12); }
   #detail h3 { margin:0 0 6px; font-size:15px; }
   #detail ul {  margin:8px 0 0; padding-left:18px; max-height:420px; overflow:auto; }
   #detail li { margin-bottom:4px; }
@@ -57,26 +63,36 @@
     </div>
     <div id="detail"><div class="note">Select a package to see its dependents.</div></div>
   </section>
+  <section id="contributors">
+    <div>
+      <h2>Contributors</h2>
+      <div class="note">GitHub contributors per repository (bots excluded). Click a package to see who they are.</div>
+      <div id="contrib"></div>
+    </div>
+    <div id="contrib-detail"><div class="note">Select a package to see its contributors.</div></div>
+  </section>
 </main>
 <script>
 const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString();
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let data, selected = null;
-const expanded = { dl: false, stars: false };
+const expanded = { dl: false, stars: false, contrib: false };
+let contribSel = null;
 
-function barChart(el, key, items, valueOf, href) {
+function barChart(el, key, items, valueOf, href, onSelect, sel) {
   const shown = expanded[key] ? items : items.slice(0, 10);
   const max = Math.max(1, ...items.map(valueOf));
-  el.innerHTML = shown.map(p => `<div class="row"><a class="name" href="${href(p)}" title="${esc(p.name)}">${esc(p.name)}</a>
+  el.innerHTML = shown.map(p => `<div class="row ${sel && sel() === p.name ? "sel" : ""}"><a class="name" href="${href(p)}" data-n="${esc(p.name)}" title="${esc(p.name)}">${esc(p.name)}</a>
     <div class="bar" style="width:${100 * valueOf(p) / max}%"></div><div class="val">${fmt(valueOf(p))}</div></div>`).join("");
   if (items.length > 10) {
     const b = document.createElement("button");
     b.className = "more";
     b.textContent = expanded[key] ? "Show top 10" : `Show all ${items.length}`;
-    b.onclick = () => { expanded[key] = !expanded[key]; barChart(el, key, items, valueOf, href); };
+    b.onclick = () => { expanded[key] = !expanded[key]; barChart(el, key, items, valueOf, href, onSelect, sel); };
     el.appendChild(b);
   }
+  if (onSelect) el.querySelectorAll("a.name").forEach(a => a.onclick = e => { e.preventDefault(); onSelect(a.dataset.n); });
 }
 
 const depsOf = p => p.dependents.filter(d => $("incl-jso").checked || !d.jso);
@@ -97,6 +113,17 @@ function renderDeps() {
     if (matchMedia("(max-width:800px)").matches) $("detail").scrollIntoView();
   });
   renderDetail();
+}
+
+function renderContrib() {
+  const items = [...data.packages].sort((a, b) => b.contributors.length - a.contributors.length || a.name.localeCompare(b.name));
+  barChart($("contrib"), "contrib", items, p => p.contributors.length, p => p.url,
+    n => { contribSel = n; renderContrib(); if (matchMedia("(max-width:800px)").matches) $("contrib-detail").scrollIntoView(); },
+    () => contribSel);
+  const p = data.packages.find(p => p.name === contribSel);
+  if (!p) return;
+  $("contrib-detail").innerHTML = `<h3><a href="${p.url}">${esc(p.name)}</a></h3><strong>${p.contributors.length}</strong> contributor${p.contributors.length === 1 ? "" : "s"}
+    <div class="mosaic">${p.contributors.map(c => `<a href="${c.url}" title="${esc(c.login)} · ${c.commits} commit${c.commits === 1 ? "" : "s"}"><img loading="lazy" src="${c.avatar}${c.avatar.includes("?") ? "&" : "?"}s=112" alt="${esc(c.login)}"></a>`).join("")}</div>`;
 }
 
 function renderDetail() {
@@ -120,6 +147,8 @@ fetch("data.json").then(r => r.json()).then(d => {
   const h = decodeURIComponent(location.hash.slice(1));
   selected = d.packages.some(p => p.name === h) ? h : d.packages.filter(p => p.registered).sort((a, b) => b.dependents.length - a.dependents.length)[0]?.name;
   renderDeps();
+  contribSel = [...d.packages].sort((a, b) => b.contributors.length - a.contributors.length)[0]?.name;
+  renderContrib();
 }).catch(e => { $("meta").textContent = "Failed to load data.json: " + e; });
 </script>
 </body>
