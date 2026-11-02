@@ -38,6 +38,7 @@
   #detail h3 { margin:0 0 6px; font-size:15px; }
   #detail ul {  margin:8px 0 0; padding-left:18px; max-height:420px; overflow:auto; }
   #detail li { margin-bottom:4px; }
+  .stars { font-size:12px; color:var(--muted); margin-left:6px; }
   .desc { color:var(--muted); font-size:13px; }
   .tag { font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:10px; padding:0 6px; margin-left:4px; }
   label { font-size:13px; color:var(--muted); }
@@ -132,7 +133,7 @@ function renderDetail() {
   const ds = depsOf(p);
   $("detail").innerHTML = `<h3><a href="${p.url}">${esc(p.name)}</a> <span class="tag">v${p.version}</span></h3>
     <div class="note">${esc(p.description)}</div><strong>${ds.length}</strong> dependent package${ds.length === 1 ? "" : "s"}
-    <ul>${ds.map(d => `<li>${d.url ? `<a href="${d.url}">${esc(d.name)}</a>` : esc(d.name)}${d.jso ? '<span class="tag">JSO</span>' : ""}${d.description ? `<span class="desc"> — ${esc(d.description)}</span>` : ""}</li>`).join("")}</ul>`;
+    <ul>${ds.map(d => `<li>${d.url ? `<a href="${d.url}">${esc(d.name)}</a>` : esc(d.name)}${d.jso ? '<span class="tag">JSO</span>' : ""}${d.url ? `<span class="stars" title="GitHub stars">★ ${fmt(d.stars || 0)}</span>` : ""}${d.description ? `<span class="desc"> — ${esc(d.description)}</span>` : ""}</li>`).join("")}</ul>`;
 }
 
 fetch("data.json").then(r => r.json()).then(d => {

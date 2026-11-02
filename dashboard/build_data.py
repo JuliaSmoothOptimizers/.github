@@ -66,17 +66,17 @@ def gh_contributors(repo):
 
 
 def gh_descriptions(slugs):
-    """Fetch repo descriptions via batched GraphQL queries; returns {(owner, repo): text}."""
+    """Fetch description and stars via batched GraphQL queries; returns {(owner, repo): (text, stars)}."""
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
-        print("GITHUB_TOKEN not set; skipping dependent descriptions", file=sys.stderr)
+        print("GITHUB_TOKEN not set; skipping dependent descriptions and stars", file=sys.stderr)
         return {}
     slugs = sorted(slugs)
     out = {}
     for i in range(0, len(slugs), 50):
         chunk = slugs[i : i + 50]
         q = "query{" + " ".join(
-            f'r{j}:repository(owner:{json.dumps(o)},name:{json.dumps(n)}){{description}}'
+            f'r{j}:repository(owner:{json.dumps(o)},name:{json.dumps(n)}){{description stargazerCount}}'
             for j, (o, n) in enumerate(chunk)
         ) + "}"
         req = urllib.request.Request(
@@ -92,8 +92,8 @@ def gh_descriptions(slugs):
             continue
         for j, slug in enumerate(chunk):
             node = res.get(f"r{j}")
-            if node and node.get("description"):
-                out[slug] = node["description"].strip()
+            if node:
+                out[slug] = ((node.get("description") or "").strip(), node["stargazerCount"])
     return out
 
 
@@ -187,12 +187,13 @@ def main():
     descs = gh_descriptions({d["slug"] for ds in dependents.values() for d in ds if d["slug"]})
     for ds in dependents.values():
         for d in ds:
-            d["description"] = descs.get(d.pop("slug"), "")
+            d["description"], d["stars"] = descs.get(d.pop("slug"), ("", 0))
+        ds.sort(key=lambda d: (-d["stars"], d["name"].lower()))
 
     packages = []
     for r in repos:
         uuid = by_repo.get(r["name"].lower())
-        deps = sorted(dependents.get(uuid, []), key=lambda d: d["name"].lower()) if uuid else []
+        deps = dependents.get(uuid, []) if uuid else []
         packages.append({
             "name": registry[uuid]["name"] if uuid else r["name"],
             "url": r["html_url"],
