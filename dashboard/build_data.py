@@ -31,7 +31,7 @@ def http(url, headers=None):
     return urllib.request.urlopen(req, timeout=120)
 
 
-def gh_paged(path):
+def gh_paged(path, tolerant=False):
     headers = {"Accept": "application/vnd.github+json", "User-Agent": "jso-dashboard"}
     if os.environ.get("GITHUB_TOKEN"):
         headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
@@ -41,7 +41,10 @@ def gh_paged(path):
         try:
             with http(f"https://api.github.com{path}{sep}per_page=100&page={page}", headers) as r:
                 batch = json.load(r)
-        except Exception as e:  # e.g. empty repo or very large contributor list
+        except Exception as e:
+            if not tolerant:
+                raise
+            # e.g. empty repo (204) or a contributor list too large for the API
             print(f"{path}: {e}", file=sys.stderr)
             return items
         items += batch
@@ -57,7 +60,7 @@ def gh_repos():
 def gh_contributors(repo):
     return [
         {"login": c["login"], "avatar": c["avatar_url"], "url": c["html_url"], "commits": c["contributions"]}
-        for c in gh_paged(f"/repos/{ORG}/{repo}/contributors")
+        for c in gh_paged(f"/repos/{ORG}/{repo}/contributors", tolerant=True)
         if isinstance(c, dict) and c.get("type") != "Bot"
     ]
 
