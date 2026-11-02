@@ -37,6 +37,9 @@
   #contrib .row.sel, #contrib .row:hover { background:rgba(149,88,178,.12); }
   #detail h3 { margin:0 0 6px; font-size:15px; }
   #detail ul {  margin:8px 0 0; padding-left:18px; max-height:420px; overflow:auto; }
+  #top-deps { grid-column:1/-1; }
+  #top-list ol { margin:8px 0 0; padding-left:22px; }
+  .uses { margin-top:2px; font-size:12px; color:var(--muted); }
   #detail li { margin-bottom:4px; }
   .stars { font-size:12px; color:var(--muted); margin-left:6px; }
   .desc { color:var(--muted); font-size:13px; }
@@ -64,6 +67,11 @@
     </div>
     <div id="detail"><div class="note">Select a package to see its dependents.</div></div>
   </section>
+  <section id="top-deps">
+    <h2>Top dependents</h2>
+    <div class="note">The dependents with the most GitHub stars across all JSO packages, with the JSO packages each one depends on.</div>
+    <div id="top-list"></div>
+  </section>
   <section id="contributors">
     <div>
       <h2>Contributors</h2>
@@ -78,7 +86,7 @@ const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString();
 const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let data, selected = null;
-const expanded = { dl: false, stars: false, contrib: false };
+const expanded = { dl: false, stars: false, contrib: false, depDetail: false, top: false };
 let contribSel = null;
 
 function barChart(el, key, items, valueOf, href, onSelect, sel) {
@@ -109,11 +117,13 @@ function renderDeps() {
   $("dep-list").querySelectorAll("a.name").forEach(a => a.onclick = e => {
     e.preventDefault();
     selected = a.dataset.n;
+    expanded.depDetail = false;
     history.replaceState(null, "", "#" + encodeURIComponent(selected));
     renderDeps();
     if (matchMedia("(max-width:800px)").matches) $("detail").scrollIntoView();
   });
   renderDetail();
+  renderTop();
 }
 
 function renderContrib() {
@@ -127,13 +137,40 @@ function renderContrib() {
     <div class="mosaic">${p.contributors.map(c => `<a href="${c.url}" title="${esc(c.login)} · ${c.commits} commit${c.commits === 1 ? "" : "s"}"><img loading="lazy" src="${c.avatar}${c.avatar.includes("?") ? "&" : "?"}s=112" alt="${esc(c.login)}"></a>`).join("")}</div>`;
 }
 
+function depItem(d, extra = "") {
+  return `<li>${d.url ? `<a href="${d.url}">${esc(d.name)}</a>` : esc(d.name)}${d.jso ? '<span class="tag">JSO</span>' : ""}${d.url ? `<span class="stars" title="GitHub stars">★ ${fmt(d.stars || 0)}</span>` : ""}${d.description ? `<span class="desc"> — ${esc(d.description)}</span>` : ""}${extra}</li>`;
+}
+
+function moreButton(key, total, rerender) {
+  if (total <= 10) return "";
+  return `<button class="more" data-key="${key}">${expanded[key] ? "Show top 10" : `Show all ${total}`}</button>`;
+}
+
+function bindMore(el, rerender) {
+  el.querySelectorAll("button.more").forEach(b => b.onclick = () => { expanded[b.dataset.key] = !expanded[b.dataset.key]; rerender(); });
+}
+
+function renderTop() {
+  const by = new Map();
+  for (const p of data.packages) for (const d of depsOf(p)) {
+    if (!by.has(d.name)) by.set(d.name, { ...d, uses: [] });
+    by.get(d.name).uses.push(p.name);
+  }
+  const all = [...by.values()].sort((a, b) => b.stars - a.stars || a.name.localeCompare(b.name));
+  const shown = expanded.top ? all : all.slice(0, 10);
+  $("top-list").innerHTML = `<ol>${shown.map(d => depItem(d, `<div class="uses">depends on ${d.uses.map(u => `<span class="tag">${esc(u)}</span>`).join(" ")}</div>`)).join("")}</ol>` + moreButton("top", all.length);
+  bindMore($("top-list"), renderTop);
+}
+
 function renderDetail() {
   const p = data.packages.find(p => p.name === selected);
   if (!p) return;
   const ds = depsOf(p);
+  const shown = expanded.depDetail ? ds : ds.slice(0, 10);
   $("detail").innerHTML = `<h3><a href="${p.url}">${esc(p.name)}</a> <span class="tag">v${p.version}</span></h3>
     <div class="note">${esc(p.description)}</div><strong>${ds.length}</strong> dependent package${ds.length === 1 ? "" : "s"}
-    <ul>${ds.map(d => `<li>${d.url ? `<a href="${d.url}">${esc(d.name)}</a>` : esc(d.name)}${d.jso ? '<span class="tag">JSO</span>' : ""}${d.url ? `<span class="stars" title="GitHub stars">★ ${fmt(d.stars || 0)}</span>` : ""}${d.description ? `<span class="desc"> — ${esc(d.description)}</span>` : ""}</li>`).join("")}</ul>`;
+    <ul>${shown.map(d => depItem(d)).join("")}</ul>${moreButton("depDetail", ds.length)}`;
+  bindMore($("detail"), renderDetail);
 }
 
 fetch("data.json").then(r => r.json()).then(d => {
