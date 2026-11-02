@@ -66,7 +66,7 @@ def gh_contributors(repo):
 
 
 def gh_descriptions(slugs):
-    """Fetch description and stars via batched GraphQL queries; returns {(owner, repo): (text, stars)}."""
+    """Fetch description and stars via batched GraphQL queries; returns {(owner, repo): (text, stars, canonical_url)}."""
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
         print("GITHUB_TOKEN not set; skipping dependent descriptions and stars", file=sys.stderr)
@@ -76,7 +76,7 @@ def gh_descriptions(slugs):
     for i in range(0, len(slugs), 50):
         chunk = slugs[i : i + 50]
         q = "query{" + " ".join(
-            f'r{j}:repository(owner:{json.dumps(o)},name:{json.dumps(n)}){{description stargazerCount}}'
+            f'r{j}:repository(owner:{json.dumps(o)},name:{json.dumps(n)}){{description stargazerCount url}}'
             for j, (o, n) in enumerate(chunk)
         ) + "}"
         req = urllib.request.Request(
@@ -93,7 +93,7 @@ def gh_descriptions(slugs):
         for j, slug in enumerate(chunk):
             node = res.get(f"r{j}")
             if node:
-                out[slug] = ((node.get("description") or "").strip(), node["stargazerCount"])
+                out[slug] = ((node.get("description") or "").strip(), node["stargazerCount"], node["url"])
     return out
 
 
@@ -190,7 +190,10 @@ def main():
     descs = gh_descriptions({d["slug"] for ds in dependents.values() for d in ds if d["slug"]})
     for ds in dependents.values():
         for d in ds:
-            d["description"], d["stars"] = descs.get(d.pop("slug"), ("", 0))
+            d["description"], d["stars"], canonical = descs.get(d.pop("slug"), ("", 0, None))
+            if canonical:  # follow renames/transfers so links and grouping use the current repository
+                d["repo_url"] = canonical
+                d["url"] = canonical + (f"/tree/HEAD/{d['subdir']}" if d["subdir"] else "")
         ds.sort(key=lambda d: (-d["stars"], d["name"].lower()))
 
     packages = []
