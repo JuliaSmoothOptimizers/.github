@@ -139,6 +139,7 @@ def load_registry(root):
         pkgs[info["uuid"]] = {
             "name": info["name"],
             "repo": info.get("repo", ""),
+            "subdir": info.get("subdir", ""),
             "latest": ".".join(map(str, latest)),
             "deps": dep_uuids,
         }
@@ -179,7 +180,9 @@ def main():
                 slug = repo_slug(p["repo"])
                 dependents[dep].append({
                     "name": p["name"],
-                    "url": f"https://github.com/{slug[0]}/{slug[1]}" if slug else None,
+                    "url": (f"https://github.com/{slug[0]}/{slug[1]}" + (f"/tree/HEAD/{p['subdir']}" if p["subdir"] else "")) if slug else None,
+                    "repo_url": f"https://github.com/{slug[0]}/{slug[1]}" if slug else None,
+                    "subdir": p["subdir"],
                     "jso": uuid in jso_uuids,
                     "slug": slug,
                 })

@@ -138,7 +138,7 @@ function renderContrib() {
 }
 
 function depItem(d, extra = "") {
-  return `<li>${d.url ? `<a href="${d.url}">${esc(d.name)}</a>` : esc(d.name)}${d.jso ? '<span class="tag">JSO</span>' : ""}${d.url ? `<span class="stars" title="GitHub stars">★ ${fmt(d.stars || 0)}</span>` : ""}${d.description ? `<span class="desc"> — ${esc(d.description)}</span>` : ""}${extra}</li>`;
+  return `<li>${d.url ? `<a href="${d.url}">${esc(d.name)}</a>` : esc(d.name)}${d.jso ? '<span class="tag">JSO</span>' : ""}${d.subdir ? `<span class="tag" title="${esc(d.subdir)}">in <a href="${d.repo_url}">${esc(d.repo_url.split("/").slice(-2).join("/"))}</a></span>` : ""}${d.url ? `<span class="stars" title="GitHub stars">★ ${fmt(d.stars || 0)}</span>` : ""}${d.description ? `<span class="desc"> — ${esc(d.description)}</span>` : ""}${extra}</li>`;
 }
 
 function moreButton(key, total, rerender) {
@@ -151,14 +151,21 @@ function bindMore(el, rerender) {
 }
 
 function renderTop() {
+  // Sub-packages of one repository share its stars, so group them under the repository.
   const by = new Map();
   for (const p of data.packages) for (const d of depsOf(p)) {
-    if (!by.has(d.name)) by.set(d.name, { ...d, uses: [] });
-    by.get(d.name).uses.push(p.name);
+    const key = d.repo_url || d.name;
+    if (!by.has(key)) by.set(key, { ...d, subs: new Set(), uses: new Set() });
+    const g = by.get(key);
+    if (d.subdir) g.subs.add(d.name);
+    g.uses.add(p.name);
+  }
+  for (const g of by.values()) {
+    if (g.subs.size) { g.name = g.repo_url.split("/").pop(); g.url = g.repo_url; g.subdir = ""; }
   }
   const all = [...by.values()].sort((a, b) => b.stars - a.stars || a.name.localeCompare(b.name));
   const shown = expanded.top ? all : all.slice(0, 10);
-  $("top-list").innerHTML = `<ol>${shown.map(d => depItem(d, `<div class="uses">depends on ${d.uses.map(u => `<span class="tag">${esc(u)}</span>`).join(" ")}</div>`)).join("")}</ol>` + moreButton("top", all.length);
+  $("top-list").innerHTML = `<ol>${shown.map(d => depItem(d, `${d.subs.size ? `<div class="uses">via ${[...d.subs].sort().map(n => `<span class="tag">${esc(n)}</span>`).join(" ")}</div>` : ""}<div class="uses">depends on ${[...d.uses].map(u => `<span class="tag">${esc(u)}</span>`).join(" ")}</div>`)).join("")}</ol>` + moreButton("top", all.length);
   bindMore($("top-list"), renderTop);
 }
 
