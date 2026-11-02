@@ -31,18 +31,35 @@ def http(url, headers=None):
     return urllib.request.urlopen(req, timeout=120)
 
 
-def gh_repos():
+def gh_paged(path):
     headers = {"Accept": "application/vnd.github+json", "User-Agent": "jso-dashboard"}
     if os.environ.get("GITHUB_TOKEN"):
         headers["Authorization"] = "Bearer " + os.environ["GITHUB_TOKEN"]
-    repos, page = [], 1
+    sep = "&" if "?" in path else "?"
+    items, page = [], 1
     while True:
-        with http(f"https://api.github.com/orgs/{ORG}/repos?per_page=100&type=public&page={page}", headers) as r:
-            batch = json.load(r)
-        repos += batch
+        try:
+            with http(f"https://api.github.com{path}{sep}per_page=100&page={page}", headers) as r:
+                batch = json.load(r)
+        except Exception as e:  # e.g. empty repo or very large contributor list
+            print(f"{path}: {e}", file=sys.stderr)
+            return items
+        items += batch
         if len(batch) < 100:
-            return repos
+            return items
         page += 1
+
+
+def gh_repos():
+    return gh_paged(f"/orgs/{ORG}/repos?type=public")
+
+
+def gh_contributors(repo):
+    return [
+        {"login": c["login"], "avatar": c["avatar_url"], "url": c["html_url"], "commits": c["contributions"]}
+        for c in gh_paged(f"/repos/{ORG}/{repo}/contributors")
+        if isinstance(c, dict) and c.get("type") != "Bot"
+    ]
 
 
 def gh_descriptions(slugs):
@@ -183,6 +200,7 @@ def main():
             "version": registry[uuid]["latest"] if uuid else None,
             "downloads": dl.get(uuid, 0) if uuid else None,
             "dependents": deps,
+            "contributors": gh_contributors(r["name"]),
         })
 
     data = {
