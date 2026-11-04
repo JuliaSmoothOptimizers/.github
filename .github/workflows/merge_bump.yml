@@ -42,8 +42,7 @@ jobs:
           VERSION=$(echo "$TITLE" | grep -oP 'Bump version to \K.*')
           LATEST_SHA=$(echo "$PR" | jq -r '.commits[-1].oid')
           RELEASE_NOTES=$(printf '%s\n' "$BODY" | awk '
-            /^### Release notes$/ { in_notes=1; next }
-            in_notes && /^### / { exit }
+            !in_notes && /^### Release notes$/ { in_notes=1; next }
             in_notes { print }
           ' | sed '/./,$!d')
           NOTES_DELIM="JSOBOT_RELEASE_NOTES_EOF"
