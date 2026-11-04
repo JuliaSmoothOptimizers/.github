@@ -94,13 +94,32 @@ jobs:
             TAG=$VERSION
           fi
           export TAG
-          julia -e 'using Pkg;
+          julia -e 'using Pkg, TOML;
             PKG, TAG, VERSION = ENV["PKG"], ENV["TAG"], ENV["VERSION"]
             joburl = joinpath(ENV["GITHUB_SERVER_URL"], ENV["GITHUB_REPOSITORY"], "actions/runs", ENV["GITHUB_RUN_ID"])
             open("../breakage/breakage-$PKG-$VERSION", "w") do io
               try
                 TAG == "no_tag" && error("No tag for $VERSION")
                 pkg"activate .";
+
+                # Remove the compat bound of the dependent on the package under test,
+                # if that bound excludes the version being tested.
+                devproj = TOML.parsefile("../Project.toml")
+                devname = devproj["name"]
+                devversion = VersionNumber(devproj["version"])
+                compat_dropped = false
+                for f in ("Project.toml", joinpath("test", "Project.toml"))
+                  isfile(f) || continue
+                  p = TOML.parsefile(f)
+                  compat = get(p, "compat", Dict{String,Any}())
+                  if haskey(compat, devname) && !(devversion in Pkg.Types.semver_spec(compat[devname]))
+                    @info "Dropping compat $devname = $(compat[devname]) from $f (excludes $devversion)"
+                    delete!(compat, devname)
+                    open(fio -> TOML.print(fio, p), f, "w")
+                    compat_dropped = true
+                  end
+                end
+
                 pkg"instantiate";
                 pkg"dev ../";
                 if TAG == "latest"
@@ -109,7 +128,11 @@ jobs:
                 pkg"build";
                 pkg"test";
 
-                print(io, "[![](https://img.shields.io/badge/$TAG-Pass-green)]($joburl)");
+                if compat_dropped
+                  print(io, "[![](https://img.shields.io/badge/$TAG-Pass%20%28compat%20bump%29-yellow)]($joburl)");
+                else
+                  print(io, "[![](https://img.shields.io/badge/$TAG-Pass-green)]($joburl)");
+                end
               catch e
                 @error e;
                 print(io, "[![](https://img.shields.io/badge/$TAG-Fail-red)]($joburl)");
