@@ -70,7 +70,8 @@ jobs:
           gh pr merge ${{ steps.find_pr.outputs.pr_number }} \
             --repo ${{ github.repository }} \
             --rebase \
-            --delete-branch
+            --delete-branch \
+            --match-head-commit "${{ github.event.workflow_run.head_sha }}"
 
       - name: Get merge commit SHA
         # When a PR is merged, the commit sha changes (!!!).
