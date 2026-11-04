@@ -27,7 +27,7 @@ jobs:
 
           if [[ "$ROLE" != "admin" && "$ROLE" != "maintain" ]]; then
             echo "Commenter $COMMENTER has role '$ROLE', which is insufficient. Skipping."
-            exit 0
+            exit 1
           fi
 
       - name: Parse version bump command
