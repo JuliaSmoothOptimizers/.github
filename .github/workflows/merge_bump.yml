@@ -83,8 +83,8 @@ jobs:
           BASE_REF: ${{ steps.find_pr.outputs.base_ref }}
         run: |
           SHA=$(gh api \
-            /repos/${{ github.repository }}/branches/$BASE_REF \
-            --jq '.commit.sha')
+            /repos/${{ github.repository }}/pulls/${{ steps.find_pr.outputs.pr_number }} \
+            --jq 'if .merged then .merge_commit_sha else error("Version bump PR has not merged yet") end')
           echo "sha=$SHA" >> $GITHUB_OUTPUT
 
       - name: Comment on merge commit
