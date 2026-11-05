@@ -10,7 +10,7 @@ jobs:
     if: |
       github.event.issue.pull_request != null &&
       startsWith(github.event.comment.body, '@jsobot version')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     permissions:
       actions: read
       contents: write
@@ -172,8 +172,8 @@ jobs:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
         run: |
           BRANCH="jsobot/bump-version-${NEW_VERSION}"
-          git config user.name  "jsobot"
-          git config user.email "jsobot@users.noreply.github.com"
+          git config user.name  "jsoregistrator"
+          git config user.email "jsoregistrator@users.noreply.github.com"
           git checkout -b "$BRANCH"
           git add Project.toml
           git commit -m "Bump version to $NEW_VERSION"
