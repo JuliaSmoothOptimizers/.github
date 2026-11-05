@@ -12,6 +12,7 @@ jobs:
       startsWith(github.event.comment.body, '@jsobot version')
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: write
       pull-requests: write
 
@@ -57,22 +58,60 @@ jobs:
             echo "$NOTES_DELIM"
           } >> $GITHUB_OUTPUT
 
-      - name: Merge PR via rebase
-        # Merge the PR where the comment was posted to prepare for the version bump.
+      - name: Validate PR and CI
+        id: pr
         uses: actions/github-script@v8
+        with:
+          script: |
+            const { data: pull } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            })
+            if (pull.state !== 'open' || pull.merged) {
+              throw new Error('The commented pull request is not open')
+            }
+            if (pull.base.ref !== context.payload.repository.default_branch) {
+              throw new Error(`Pull requests must target ${context.payload.repository.default_branch}`)
+            }
+
+            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head_sha: pull.head.sha,
+              per_page: 100
+            })
+            const ciSucceeded = runs.some(run =>
+              run.name === 'CI' &&
+              run.head_sha === pull.head.sha &&
+              run.conclusion === 'success'
+            )
+            if (!ciSucceeded) {
+              throw new Error(`CI has not succeeded for pull request head ${pull.head.sha}`)
+            }
+
+            core.setOutput('head_sha', pull.head.sha)
+            core.setOutput('base_ref', pull.base.ref)
+
+      - name: Merge PR via rebase
+        # Merge only the revision whose CI result was verified above.
+        uses: actions/github-script@v8
+        env:
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
         with:
           script: |
             await github.rest.pulls.merge({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.issue.number,
-              merge_method: 'rebase'
+              merge_method: 'rebase',
+              sha: process.env.HEAD_SHA
             })
 
-      - name: Checkout PR branch
+      - name: Checkout release branch
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.issue.pull_request.base.ref }}
+          ref: ${{ steps.pr.outputs.base_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Julia
@@ -129,17 +168,16 @@ jobs:
 
       - name: Commit and push to new branch
         id: commit
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
         run: |
-          BRANCH="jsobot/bump-version-${{ steps.bump.outputs.new_version }}"
+          BRANCH="jsobot/bump-version-${NEW_VERSION}"
           git config user.name  "jsobot"
           git config user.email "jsobot@users.noreply.github.com"
-          git stash  # Project.toml has been modified
-          git pull   # pull freshly merged branch
-          git checkout -b $BRANCH
-          git stash pop
+          git checkout -b "$BRANCH"
           git add Project.toml
-          git commit -m "Bump version to ${{ steps.bump.outputs.new_version }}"
-          git push origin $BRANCH
+          git commit -m "Bump version to $NEW_VERSION"
+          git push origin "$BRANCH"
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
       - name: Generate GitHub App token
@@ -159,6 +197,7 @@ jobs:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
           RELEASE_NOTES: ${{ steps.parse.outputs.release_notes }}
           BRANCH: ${{ steps.commit.outputs.branch }}
+          BASE_REF: ${{ steps.pr.outputs.base_ref }}
         with:
           github-token: ${{ steps.app_token.outputs.token }}
           script: |
@@ -173,7 +212,7 @@ jobs:
               repo: context.repo.repo,
               title: `Bump version to ${version}`,
               head: process.env.BRANCH,
-              base: 'main',
+              base: process.env.BASE_REF,
               body
             })
             // await github.rest.issues.addLabels({
