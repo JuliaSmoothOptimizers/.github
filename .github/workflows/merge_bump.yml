@@ -49,7 +49,7 @@ jobs:
 
             const pull = pulls[0]
             const version = versionMatch[1]
-            if (pull.user.login !== 'jsobot[bot]') {
+            if (pull.user.login !== 'jsoregistrator[bot]') {
               throw new Error(`Unexpected version bump PR author: ${pull.user.login}`)
             }
             if (pull.head.repo?.full_name !== repoName ||
