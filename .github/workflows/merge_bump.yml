@@ -93,9 +93,10 @@ jobs:
           HEAD_SHA: ${{ steps.find_pr.outputs.head_sha }}
           EXPECTED_VERSION: ${{ steps.find_pr.outputs.version }}
         run: |
-          gh api "/repos/$GITHUB_REPOSITORY/contents/Project.toml" \
+          set -euo pipefail
+          gh api --method GET "/repos/$GITHUB_REPOSITORY/contents/Project.toml" \
             --field "ref=$BASE_REF" --jq .content | base64 --decode > "$RUNNER_TEMP/base-Project.toml"
-          gh api "/repos/$GITHUB_REPOSITORY/contents/Project.toml" \
+          gh api --method GET "/repos/$GITHUB_REPOSITORY/contents/Project.toml" \
             --field "ref=$HEAD_SHA" --jq .content | base64 --decode > "$RUNNER_TEMP/head-Project.toml"
 
           python3 - <<'PY'
