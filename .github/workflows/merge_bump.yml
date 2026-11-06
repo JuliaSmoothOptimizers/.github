@@ -178,4 +178,4 @@ jobs:
           gh api \
             --method POST \
             "/repos/${{ github.repository }}/commits/$SHA/comments" \
-            --field body="$COMMENT"
+            --raw-field body="$COMMENT"
