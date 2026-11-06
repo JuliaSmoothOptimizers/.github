@@ -1,0 +1,181 @@
+name: Merge Version Bump PR
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+
+jobs:
+  merge-version-bump:
+    # Run Action if CI completed successfully and
+    # an open PR is found with title starting with "Bump version to" on the
+    # current branch.
+    if: |
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch != github.event.repository.default_branch
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Validate version bump PR
+        id: find_pr
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const branch = context.payload.workflow_run.head_branch
+            const headSha = context.payload.workflow_run.head_sha
+            const repoName = `${context.repo.owner}/${context.repo.repo}`
+            const versionMatch = branch.match(/^jsobot\/bump-version-(\d+\.\d+\.\d+)$/)
+            if (!versionMatch) {
+              core.setOutput('pr_number', '')
+              return
+            }
+
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              head: `${context.repo.owner}:${branch}`
+            })
+            if (pulls.length === 0) {
+              core.setOutput('pr_number', '')
+              core.info(`No open version bump PR found for ${branch}`)
+              return
+            }
+            if (pulls.length !== 1) {
+              throw new Error(`Expected one PR for ${branch}, found ${pulls.length}`)
+            }
+
+            const pull = pulls[0]
+            const version = versionMatch[1]
+            if (pull.user.login !== 'jsoregistrator[bot]') {
+              throw new Error(`Unexpected version bump PR author: ${pull.user.login}`)
+            }
+            if (pull.head.repo?.full_name !== repoName ||
+                context.payload.workflow_run.head_repository?.full_name !== repoName) {
+              throw new Error('Version bump PR and CI run must originate from this repository')
+            }
+            if (pull.base.ref !== context.payload.repository.default_branch) {
+              throw new Error(`Version bump PR must target ${context.payload.repository.default_branch}`)
+            }
+            if (pull.title !== `Bump version to ${version}`) {
+              throw new Error('Version bump PR title does not match its branch version')
+            }
+            if (pull.head.sha !== headSha) {
+              throw new Error('The CI run does not match the current version bump PR head')
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pull.number
+            })
+            if (files.length !== 1 ||
+                files[0].filename !== 'Project.toml' ||
+                files[0].status !== 'modified') {
+              throw new Error('Version bump PR may only modify Project.toml')
+            }
+
+            const releaseNotesMatch = (pull.body || '').match(/(?:^|\n)### Release notes\n([\s\S]*)$/)
+            core.setOutput('pr_number', pull.number)
+            core.setOutput('base_ref', pull.base.ref)
+            core.setOutput('branch', branch)
+            core.setOutput('head_sha', headSha)
+            core.setOutput('version', version)
+            core.setOutput('release_notes', (releaseNotesMatch?.[1] || '').trim())
+
+      - name: Verify Project.toml contains only the requested version bump
+        if: steps.find_pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_REF: ${{ steps.find_pr.outputs.base_ref }}
+          HEAD_SHA: ${{ steps.find_pr.outputs.head_sha }}
+          EXPECTED_VERSION: ${{ steps.find_pr.outputs.version }}
+        run: |
+          set -euo pipefail
+          gh api --method GET "/repos/$GITHUB_REPOSITORY/contents/Project.toml" \
+            --field "ref=$BASE_REF" --jq .content | base64 --decode > "$RUNNER_TEMP/base-Project.toml"
+          gh api --method GET "/repos/$GITHUB_REPOSITORY/contents/Project.toml" \
+            --field "ref=$HEAD_SHA" --jq .content | base64 --decode > "$RUNNER_TEMP/head-Project.toml"
+
+          python3 - <<'PY'
+          import os
+          import re
+          import tomllib
+
+          with open(os.path.join(os.environ["RUNNER_TEMP"], "base-Project.toml"), "rb") as f:
+              base = tomllib.load(f)
+          with open(os.path.join(os.environ["RUNNER_TEMP"], "head-Project.toml"), "rb") as f:
+              head = tomllib.load(f)
+
+          old_version = base.get("version")
+          new_version = head.get("version")
+          expected = os.environ["EXPECTED_VERSION"]
+          version_pattern = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
+          old_match = version_pattern.fullmatch(old_version or "")
+          new_match = version_pattern.fullmatch(new_version or "")
+          if not old_match or not new_match or new_version != expected:
+              raise SystemExit("Project.toml version does not match the validated PR version")
+
+          base.pop("version")
+          head.pop("version")
+          if base != head:
+              raise SystemExit("Version bump PR changes Project.toml fields other than version")
+
+          old = tuple(map(int, old_match.groups()))
+          new = tuple(map(int, new_match.groups()))
+          valid_bumps = {
+              (old[0] + 1, 0, 0),
+              (old[0], old[1] + 1, 0),
+              (old[0], old[1], old[2] + 1),
+          }
+          if new not in valid_bumps:
+              raise SystemExit(f"{old_version} to {new_version} is not a single major, minor, or patch bump")
+          PY
+
+      - name: Merge version bump PR and delete branch
+        if: steps.find_pr.outputs.pr_number != ''
+        id: merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.find_pr.outputs.pr_number }}
+          HEAD_SHA: ${{ steps.find_pr.outputs.head_sha }}
+        run: |
+          gh pr merge "$PR_NUMBER" \
+            --repo ${{ github.repository }} \
+            --rebase \
+            --delete-branch \
+            --match-head-commit "$HEAD_SHA"
+
+      - name: Get merge commit SHA
+        # Use the commit created by merging this PR, not the current base tip.
+        if: steps.find_pr.outputs.pr_number != ''
+        id: merge_commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_REF: ${{ steps.find_pr.outputs.base_ref }}
+        run: |
+          SHA=$(gh api \
+            /repos/${{ github.repository }}/pulls/${{ steps.find_pr.outputs.pr_number }} \
+            --jq 'if .merged then .merge_commit_sha else error("Version bump PR has not merged yet") end')
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+
+      - name: Comment on merge commit
+        # Add a comment to the PR merge commit to trigger registration.
+        if: steps.find_pr.outputs.pr_number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ steps.merge_commit.outputs.sha }}
+          VERSION: ${{ steps.find_pr.outputs.version }}
+          RELEASE_NOTES: ${{ steps.find_pr.outputs.release_notes }}
+        run: |
+          COMMENT="@JuliaRegistrator register"
+          if [ -n "$RELEASE_NOTES" ]; then
+            COMMENT=$(printf '%s\n%s' "$COMMENT" "$RELEASE_NOTES")
+          fi
+
+          gh api \
+            --method POST \
+            "/repos/${{ github.repository }}/commits/$SHA/comments" \
+            --raw-field body="$COMMENT"

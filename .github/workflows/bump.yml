@@ -1,0 +1,224 @@
+name: Bump Version
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  bump-version:
+    # Run this Action if a comment starting with "@jsobot version [major|minor|patch]" is posted.
+    if: |
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '@jsobot version')
+    runs-on: ubuntu-26.04
+    permissions:
+      actions: read
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check commenter permissions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+        run: |
+          ROLE=$(gh api \
+            /repos/${{ github.repository }}/collaborators/$COMMENTER/permission \
+            --jq '.permission')
+
+          if [[ "$ROLE" != "admin" && "$ROLE" != "maintain" ]]; then
+            echo "Commenter $COMMENTER has role '$ROLE', which is insufficient. Skipping."
+            exit 1
+          fi
+
+      - name: Parse version bump command
+        # Determine whether a major, minor or patch version bump was requested.
+        # Parse optional release notes text from the rest of the comment body.
+        # Add parsed values to the environment so other steps can read them.
+        id: parse
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          COMMENT=$(printf '%s' "$COMMENT_BODY" | tr -d '\r')
+          PART=$(printf '%s\n' "$COMMENT" | head -n1 | grep -ioP '^@jsobot version\s+\K(major|minor|patch)$')
+          if [ -z "$PART" ]; then
+            echo "Comment did not match expected format '@jsobot version [major|minor|patch]'"
+            exit 1
+          fi
+          PART=$(echo "$PART" | tr '[:upper:]' '[:lower:]')
+          RELEASE_NOTES=$(printf '%s\n' "$COMMENT" | tail -n +2 | sed '/./,$!d')
+          NOTES_DELIM="JSOBOT_RELEASE_NOTES_EOF"
+          while printf '%s\n' "$RELEASE_NOTES" | grep -qx "$NOTES_DELIM"; do
+            NOTES_DELIM="${NOTES_DELIM}_X"
+          done
+          echo "part=$PART" >> $GITHUB_OUTPUT
+          {
+            echo "release_notes<<$NOTES_DELIM"
+            echo "$RELEASE_NOTES"
+            echo "$NOTES_DELIM"
+          } >> $GITHUB_OUTPUT
+
+      - name: Validate PR and CI
+        id: pr
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data: pull } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            })
+            if (pull.state !== 'open' || pull.merged) {
+              throw new Error('The commented pull request is not open')
+            }
+            if (pull.base.ref !== context.payload.repository.default_branch) {
+              throw new Error(`Pull requests must target ${context.payload.repository.default_branch}`)
+            }
+
+            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head_sha: pull.head.sha,
+              per_page: 100
+            })
+            const ciSucceeded = runs.some(run =>
+              run.name === 'CI' &&
+              run.head_sha === pull.head.sha &&
+              run.conclusion === 'success'
+            )
+            if (!ciSucceeded) {
+              throw new Error(`CI has not succeeded for pull request head ${pull.head.sha}`)
+            }
+
+            core.setOutput('head_sha', pull.head.sha)
+            core.setOutput('base_ref', pull.base.ref)
+
+      - name: Merge PR via rebase
+        # Merge only the revision whose CI result was verified above.
+        uses: actions/github-script@v8
+        env:
+          HEAD_SHA: ${{ steps.pr.outputs.head_sha }}
+        with:
+          script: |
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              merge_method: 'rebase',
+              sha: process.env.HEAD_SHA
+            })
+
+      - name: Checkout release branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.pr.outputs.base_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: "1"
+
+      - name: Bump version in Project.toml
+        # Edit Project.toml to bump the version as requested in the PR comment.
+        id: bump
+        run: |
+          julia --project=. << 'EOF'
+          using TOML
+
+          function bump_version(version::String, part::Symbol)::String
+              parts = split(version, '.')
+              length(parts) == 3 || throw(ArgumentError("Version must be in format 'major.minor.patch', got: $version"))
+              all(all(isdigit, p) for p in parts) || throw(ArgumentError("Version parts must be numeric, got: $version"))
+
+              major, minor, patch = parse.(Int, parts)
+
+              major, minor, patch = if part == :major
+                  (major + 1, 0, 0)
+              elseif part == :minor
+                  (major, minor + 1, 0)
+              elseif part == :patch
+                  (major, minor, patch + 1)
+              else
+                  throw(ArgumentError("part must be :major, :minor or :patch, got: $part"))
+              end
+
+              return "$major.$minor.$patch"
+          end
+
+          project = TOML.parsefile("Project.toml")
+          old_version = project["version"]
+          part = Symbol(ENV["PART"])
+          new_version = bump_version(old_version, part)
+          project["version"] = new_version
+          open("Project.toml", "w") do io
+              TOML.print(io, project)
+          end
+
+          open(ENV["GITHUB_OUTPUT"], "a") do io
+              println(io, "old_version=$old_version")
+              println(io, "new_version=$new_version")
+          end
+
+          println("OLD_VERSION=$old_version")
+          println("NEW_VERSION=$new_version")
+          EOF
+        env:
+          PART: ${{ steps.parse.outputs.part }}
+
+      - name: Commit and push to new branch
+        id: commit
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          BRANCH="jsobot/bump-version-${NEW_VERSION}"
+          git config user.name  "jsoregistrator"
+          git config user.email "jsoregistrator@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add Project.toml
+          git commit -m "Bump version to $NEW_VERSION"
+          git push origin "$BRANCH"
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+      - name: Generate GitHub App token
+        id: app_token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Open pull request
+        id: open_pr
+        # Label the pull request so CI runs on CirrusCI
+        # because PRs created by a bot cannot trigger GitHub Actions.
+        # See .cirrusci.yml.
+        uses: actions/github-script@v8
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+          RELEASE_NOTES: ${{ steps.parse.outputs.release_notes }}
+          BRANCH: ${{ steps.commit.outputs.branch }}
+          BASE_REF: ${{ steps.pr.outputs.base_ref }}
+        with:
+          github-token: ${{ steps.app_token.outputs.token }}
+          script: |
+            const version = process.env.NEW_VERSION
+            const releaseNotes = (process.env.RELEASE_NOTES || '').trim()
+            const body = releaseNotes
+              ? `Automated version bump to \`${version}\`\n\n### Release notes\n${releaseNotes}`
+              : `Automated version bump to \`${version}\``
+
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Bump version to ${version}`,
+              head: process.env.BRANCH,
+              base: process.env.BASE_REF,
+              body
+            })
+            // await github.rest.issues.addLabels({
+            //   owner: context.repo.owner,
+            //   repo: context.repo.repo,
+            //   issue_number: pr.data.number,
+            //   labels: ['cirrusci']
+            // })
+            core.setOutput('pr_number', pr.data.number)
