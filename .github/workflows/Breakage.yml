@@ -78,6 +78,7 @@ jobs:
         env:
           PKG: ${{ matrix.pkg }}
           VERSION: ${{ matrix.pkgversion }}
+          JOBURL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ job.check_run_id }}
         run: |
           set -v
           mkdir -p ./breakage
@@ -96,11 +97,14 @@ jobs:
           export TAG
           julia -e 'using Pkg, TOML;
             PKG, TAG, VERSION = ENV["PKG"], ENV["TAG"], ENV["VERSION"]
-            joburl = joinpath(ENV["GITHUB_SERVER_URL"], ENV["GITHUB_REPOSITORY"], "actions/runs", ENV["GITHUB_RUN_ID"])
+            joburl = ENV["JOBURL"]
             open("../breakage/breakage-$PKG-$VERSION", "w") do io
               try
                 TAG == "no_tag" && error("No tag for $VERSION")
                 pkg"activate .";
+                if TAG == "latest"
+                  global TAG = chomp(read(`git rev-parse --short HEAD`, String))
+                end
 
                 # Remove the compat bound of the dependent on the package under test,
                 # if that bound excludes the version being tested.
@@ -122,9 +126,6 @@ jobs:
 
                 pkg"instantiate";
                 pkg"dev ../";
-                if TAG == "latest"
-                  global TAG = chomp(read(`git rev-parse --short HEAD`, String))
-                end
                 pkg"build";
                 pkg"test";
 
@@ -135,7 +136,11 @@ jobs:
                 end
               catch e
                 @error e;
-                print(io, "[![](https://img.shields.io/badge/$TAG-Fail-red)]($joburl)");
+                if e isa Pkg.Resolve.ResolverError
+                  print(io, "[![](https://img.shields.io/badge/$TAG-Fail%20%28compat%29-orange)]($joburl)");
+                else
+                  print(io, "[![](https://img.shields.io/badge/$TAG-Fail-red)]($joburl)");
+                end
               end;
             end'
 
